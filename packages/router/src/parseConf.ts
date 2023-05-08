@@ -8,6 +8,7 @@ export interface ParsedConf {
   certificates: ParsedCert[];
   defaultCert: ParsedCert;
   hosts: Map<string, VHost[]>;
+  port: number;
 }
 const parseTlsCertificates = (tlsCertificates: TlsCertificate[]) =>
   Promise.all(
@@ -62,6 +63,7 @@ export async function parseConf(conf: Configuration): Promise<ParsedConf> {
     certificates,
     defaultCert,
     hosts,
+    port: conf.port,
   };
 }
 

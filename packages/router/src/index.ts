@@ -10,6 +10,7 @@ import fastifyProxy from '@fastify/http-proxy';
 import path from 'path';
 import { VHost } from './conf.js';
 import child_process from 'child_process';
+import { render } from './template.js';
 
 const conf = await parseConf(await findConfig());
 // set up fastify over http2
@@ -17,6 +18,7 @@ const app = await fastify({
   http2: true,
   https: {
     ...(await tlsOptions(conf.defaultCert, conf.certificates)),
+    allowHTTP1: true,
   },
   logger: true,
 });
@@ -32,7 +34,7 @@ const VhostPlugin = (vhost: VHost) => async (app: FastifyInstance) => {
           root,
           prefix: vhost.listener.prefix,
           prefixAvoidTrailingSlash: true,
-          list: { format: 'json', names: ['/'] },
+          list: { format: 'html', names: ['/'], render },
           constraints: { host },
         });
       }
@@ -46,9 +48,12 @@ const VhostPlugin = (vhost: VHost) => async (app: FastifyInstance) => {
         await app.register(fastifyProxy, {
           upstream: vhost.target.base,
           prefix: vhost.listener.prefix,
+          websocket: true,
           rewritePrefix:
-            (vhost.listener.stripPrefix ? '' : vhost.listener.prefix + '/') +
-            baseUrl.pathname,
+            (vhost.listener.stripPrefix
+              ? ''
+              : (vhost.listener.prefix ?? '') + '/') +
+            baseUrl.pathname.substring(1),
           constraints: { host },
           http2: vhost.target.type.includes('2'),
         });
@@ -64,6 +69,7 @@ const VhostPlugin = (vhost: VHost) => async (app: FastifyInstance) => {
         const child = child_process.spawn(command, {
           stdio: 'inherit',
           shell: true,
+          cwd: vhost.target.workdir,
         });
         await new Promise((resolve) => {
           child.on('spawn', resolve);
@@ -71,7 +77,10 @@ const VhostPlugin = (vhost: VHost) => async (app: FastifyInstance) => {
         await app.register(fastifyProxy, {
           upstream: `http://localhost:${port}`,
           prefix: vhost.listener.prefix,
-          rewritePrefix: vhost.listener.stripPrefix ? '' : vhost.listener.prefix,
+          websocket: true,
+          rewritePrefix: vhost.listener.stripPrefix
+            ? ''
+            : vhost.listener.prefix,
           constraints: { host },
         });
       }
@@ -91,6 +100,6 @@ app.get('/', { constraints: {} }, async (request, reply) => {
   });
 });
 
-app.listen({ port: 4443, host: '0.0.0.0' }, (err, address) => {
+app.listen({ port: conf.port, host: '0.0.0.0' }, (err, address) => {
   console.error(address, err);
 });

@@ -20,11 +20,13 @@ export type VHostTarget = {
 } | {
   type: 'process';
   cmd: string;
+  workdir?: string;
 }
 
 export interface Configuration {
   vhosts: VHost[];
   tlsCertificates: TlsCertificate[];
+  port: number;
 }
 
 export interface TlsCertificate {
