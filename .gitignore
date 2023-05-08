@@ -2,3 +2,8 @@ node_modules
 dist
 tmp
 *.tmp
+private
+
+router.conf.js
+router.conf.json
+router.conf.yaml
