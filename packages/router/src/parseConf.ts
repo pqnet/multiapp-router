@@ -1,7 +1,7 @@
 /** @format */
 
 import { X509Certificate } from 'crypto';
-import { Configuration, TlsCertificate, VHost } from './conf.js';
+import { AuthProvider, Configuration, TlsCertificate, VHost } from './conf.js';
 import fs from 'node:fs/promises';
 export type ParsedCert = TlsCertificate & { match(host: string): boolean };
 export interface ParsedConf {
@@ -9,6 +9,7 @@ export interface ParsedConf {
   defaultCert: ParsedCert;
   hosts: Map<string, VHost[]>;
   port: number;
+  authProviders: Record<string, AuthProvider>;
 }
 const parseTlsCertificates = (tlsCertificates: TlsCertificate[]) =>
   Promise.all(
@@ -51,7 +52,7 @@ export async function parseConf(conf: Configuration): Promise<ParsedConf> {
   for (const vhost of conf.vhosts) {
     const { host } = vhost.listener;
     if (!hosts.has(host)) hosts.set(host, []);
-    hosts.get(host)!.push(vhost);
+    hosts.get(host)?.push(vhost);
   }
   hosts.forEach((v) => {
     // sort by prefix
@@ -64,6 +65,7 @@ export async function parseConf(conf: Configuration): Promise<ParsedConf> {
     defaultCert,
     hosts,
     port: conf.port,
+    authProviders: conf.authProviders,
   };
 }
 

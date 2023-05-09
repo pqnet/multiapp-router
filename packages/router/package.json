@@ -16,6 +16,8 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@fastify/auth": "^4.2.0",
+    "@fastify/basic-auth": "^5.0.0",
     "@fastify/http-proxy": "^9.1.0",
     "@fastify/static": "^6.10.1",
     "fastify": "^4.17.0",
