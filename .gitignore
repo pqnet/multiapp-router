@@ -3,6 +3,7 @@ dist
 tmp
 *.tmp
 private
+*.shadow
 
 router.conf.js
 router.conf.json

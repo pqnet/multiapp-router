@@ -16,6 +16,11 @@ const creationParams: HashObjectPbkdf2Sha512 = {
   salt: Buffer.alloc(0),
   params: { i: 200000 },
 };
+const needRehash = (oldHash: HashObjectPbkdf2Sha512) => {
+  if (oldHash.params.i < creationParams.params.i) {
+    return true;
+  }
+};
 
 export async function createHash(password: string) {
   const binaryPassword = Buffer.from(password, 'utf-8');
@@ -43,7 +48,7 @@ const checkHash: (
 export async function verifyHash(
   password: string,
   hash: string,
-): Promise<boolean> {
+): Promise<string | boolean> {
   const hashObj = deserialize(hash);
   switch (hashObj.id) {
     case 'pbkdf2-sha512': {
@@ -56,7 +61,15 @@ export async function verifyHash(
         64,
         'sha512',
       );
-      return !Buffer.compare(testHash, hashObj.hash);
+      const success = !Buffer.compare(testHash, hashObj.hash);
+      if (!success) {
+        return false;
+      }
+      if (needRehash(hashObj)) {
+        const newHash = createHash(password);
+        return newHash;
+      }
+      return true;
     }
     default:
       return false;

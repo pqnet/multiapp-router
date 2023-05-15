@@ -32,7 +32,7 @@ export type VHostTarget =
 export type AuthProvider = {
   type: 'basic';
   realm: string;
-  users: { username: string; pwhash: string }[];
+  users: string | Array<{ username: string; pwhash: string }>;
 };
 
 export interface Configuration {
