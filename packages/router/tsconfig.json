@@ -7,7 +7,11 @@
     "module": "NodeNext", /* Specify what module code is generated. */
     "outDir": "./dist", /* Redirect output structure to the directory. */
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "lib": [
+      "ESNext"
+    ],
+    // "skipLibCheck": true,
   },
   "include": [
     "./src/**/*"

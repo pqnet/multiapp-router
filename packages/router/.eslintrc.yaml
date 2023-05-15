@@ -1,0 +1,9 @@
+# @format
+ignorePatterns:
+  - dist/**
+  - node_modules/**
+  - router.conf.js
+extends:
+  - ../../.eslintrc.yaml
+parserOptions:
+  project: tsconfig.json

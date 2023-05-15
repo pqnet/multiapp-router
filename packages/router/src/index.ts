@@ -11,8 +11,11 @@ import path from 'path';
 import { VHost } from './conf.js';
 import child_process from 'child_process';
 import { render } from './template.js';
+import { BasicAuthPlugin } from './auth.js';
+import fastifyAuth from '@fastify/auth';
 
 const conf = await parseConf(await findConfig());
+
 // set up fastify over http2
 const app = await fastify({
   http2: true,
@@ -24,7 +27,10 @@ const app = await fastify({
 });
 await app.register(fastifyConstraints);
 
-const VhostPlugin = (vhost: VHost) => async (app: FastifyInstance) => {
+const VhostPlugin = async (
+  app: FastifyInstance,
+  { vhost }: { vhost: VHost },
+) => {
   const host = vhost.listener.host;
   switch (vhost.target.type) {
     case 'file':
@@ -87,17 +93,36 @@ const VhostPlugin = (vhost: VHost) => async (app: FastifyInstance) => {
       break;
   }
 };
+if (conf.authProviders) {
+  await app.register(fastifyAuth);
+}
 
 for (const [host, vhosts] of conf.hosts) {
   for (const vhost of vhosts) {
-    app.register(VhostPlugin(vhost));
+    await app.register(async (hostApp) => {
+      if (vhost.authentication?.provider) {
+        const providerConf =
+          conf.authProviders?.[vhost.authentication.provider];
+        if (providerConf === undefined) {
+          throw new Error(
+            `missing auth provider ${vhost.authentication.provider}`,
+          );
+        }
+        await hostApp.register(BasicAuthPlugin, {
+          providerConf,
+          validUsers: vhost.authentication?.allowedUsers,
+        });
+      }
+      await app.register(VhostPlugin, { vhost });
+    });
   }
 }
 app.get('/', { constraints: {} }, async (request, reply) => {
-  reply.code(200).send({
+  await reply.code(404);
+  return {
+    message: 'Host not configured',
     hostname: request.hostname,
-    hello: 'world',
-  });
+  };
 });
 
 app.listen({ port: conf.port, host: '0.0.0.0' }, (err, address) => {

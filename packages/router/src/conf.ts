@@ -32,11 +32,11 @@ export type VHostTarget =
 export type AuthProvider = {
   type: 'basic';
   realm: string;
-  users: { username: string; pwhash: string };
+  users: { username: string; pwhash: string }[];
 };
 
 export interface Configuration {
-  authProviders: Record<string, AuthProvider>;
+  authProviders?: Record<string, AuthProvider>;
   vhosts: VHost[];
   tlsCertificates: TlsCertificate[];
   port: number;

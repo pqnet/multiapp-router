@@ -65,7 +65,7 @@ export async function parseConf(conf: Configuration): Promise<ParsedConf> {
     defaultCert,
     hosts,
     port: conf.port,
-    authProviders: conf.authProviders,
+    authProviders: conf.authProviders ?? {},
   };
 }
 
