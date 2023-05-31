@@ -45,16 +45,16 @@ export async function build_standalone() {
   const seaConfigFile = path.join('.', 'node-standalone', 'sea-config.json');
   await fs.writeFile(seaConfigFile, JSON.stringify(seaConfig));
   const { stdout, stderr } = await exec(
-    [process.argv[0], '--experimental-sea-config', seaConfigFile].join(' '),
+    [`"${process.argv[0]}"`, '--experimental-sea-config', `"${seaConfigFile}"`].join(' '),
   );
   console.error(stderr);
   console.log(stdout);
   const { stdout: stdout2, stderr: stderr2 } = await exec(
     [
       'postject',
-      outfile,
+      `"${outfile}"`,
       'NODE_SEA_BLOB',
-      seaConfig.output,
+      `"${seaConfig.output}"`,
       '--sentinel-fuse',
       'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
     ].join(' '),
