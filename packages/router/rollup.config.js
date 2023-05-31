@@ -34,7 +34,7 @@ export async function build_standalone() {
   const outfile = path.join(
     '.',
     'node-standalone',
-    'multiapp-router' + (ext ? '.' + ext : ''),
+    'multiapp-router' + ext,
   );
   console.log(outfile);
   await fs.copyFile(process.argv[0], outfile);
