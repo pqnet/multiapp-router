@@ -3,6 +3,9 @@
 
 name: Windows release build
 
+permissions:
+  contents: write
+
 on:
   push:
     tags:
