@@ -19,13 +19,11 @@ jobs:
       with:
         node-version: '>=20.3'
         cache: 'npm'
-    - run: cd packages/router
     - run: npm ci
-    - run: npm run build
-    - run: npm run bundle-singlefile
+    - run: npm run build-release
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
           packages/router/node-standalone/multiapp-router.exe
-    
+
