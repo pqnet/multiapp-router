@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -b",
-    "bundle-singlefile": "node build_standalone.js"
+    "bundle-singlefile": "node build_standalone.js",
+    "build-release": "npm run build && npm run bundle-singlefile"
   },
   "keywords": [],
   "author": "",
