@@ -1,5 +1,5 @@
 {
-  "name": "multiapp-router",
+  "name": "@pqnet/multiapp-router",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,7 +9,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "UNLICENSED",
+  "license": "GPL-3.0-only",
   "type": "module",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.0",
