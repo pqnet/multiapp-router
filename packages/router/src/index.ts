@@ -13,6 +13,7 @@ import child_process from 'child_process';
 import { render } from './template.js';
 import { BasicAuthPlugin } from './auth.js';
 import fastifyAuth from '@fastify/auth';
+import fastifyCors from '@fastify/cors';
 export default async function main() {
   const conf = await parseConf(await findConfig());
 
@@ -25,6 +26,13 @@ export default async function main() {
     },
     logger: true,
   });
+  // TODO add conf for this
+  await app.register(fastifyCors, {
+    allowedHeaders: '*',
+    credentials: true,
+    exposedHeaders: '*',
+    origin: true,
+  })
   await app.register(fastifyConstraints);
 
   const VhostPlugin = async (

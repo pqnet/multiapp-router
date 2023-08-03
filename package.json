@@ -1,4 +1,5 @@
 {
+  "name": "@pqnet/multiapp-router-workspace",
   "type": "module",
   "workspaces": [
     "packages/*"
