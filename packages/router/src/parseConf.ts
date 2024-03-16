@@ -87,6 +87,7 @@ export async function findConfig() {
         return (await import(url)).default;
       }
     } catch (e) {
+      console.warn(e);
       continue;
     }
   }
