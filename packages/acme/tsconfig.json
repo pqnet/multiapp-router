@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    /* Modules */
+    "module": "ESNext" /* Specify what module code is generated. */,
+    "moduleResolution": "Bundler",
+    "outDir": "./dist" /* Redirect output structure to the directory. */,
+    "declaration": true,
+    // "emitDeclarationOnly": true, // incompatible with rollup-plugin-typescript
+    "declarationMap": true,
+    "sourceMap": true,
+    // "allowImportingTsExtensions": true, // requires emitDeclarationOnly or noEmit, both of which are incompatible with rollup-plugin-typescript
+    "allowSyntheticDefaultImports": true,
+    "lib": ["ESNext"]
+  },
+  "files": ["./src/index.ts"]
+  // "include": [
+  //   "./src/**/*"
+  // ],
+}
