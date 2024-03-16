@@ -38,10 +38,11 @@ export type AuthProvider = {
 export interface Configuration {
   authProviders?: Record<string, AuthProvider>;
   vhosts: VHost[];
-  tlsCertificates: TlsCertificate[];
+  tlsCertificates: (TlsCertificate|TlsLoader)[];
   port: number;
 }
 
+export type TlsLoader = (domains: string[]) => Promise<TlsCertificate[]>;
 export interface TlsCertificate {
   cert: string;
   key: string;

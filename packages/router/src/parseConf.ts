@@ -1,7 +1,13 @@
 /** @format */
 
 import { X509Certificate } from 'crypto';
-import { AuthProvider, Configuration, TlsCertificate, VHost } from './conf.js';
+import {
+  AuthProvider,
+  Configuration,
+  TlsCertificate,
+  TlsLoader,
+  VHost,
+} from './conf.js';
 import fs from 'node:fs/promises';
 export type ParsedCert = TlsCertificate & { match(host: string): boolean };
 export interface ParsedConf {
@@ -43,10 +49,6 @@ const parseTlsCertificates = (tlsCertificates: TlsCertificate[]) =>
   );
 
 export async function parseConf(conf: Configuration): Promise<ParsedConf> {
-  // prepare tls router to choose certificate based on SNI
-  const certificates = await parseTlsCertificates(conf.tlsCertificates);
-  const defaultCert = certificates.find(() => true);
-  if (!defaultCert) throw new Error('No default certificate');
   // group vhosts by listener host
   const hosts = new Map<string, VHost[]>();
   for (const vhost of conf.vhosts) {
@@ -60,6 +62,25 @@ export async function parseConf(conf: Configuration): Promise<ParsedConf> {
       (a.listener.prefix ?? '/').localeCompare(b.listener.prefix ?? '/'),
     );
   });
+
+  // prepare tls router to choose certificate based on SNI
+  const inlineCertificates = await parseTlsCertificates(
+    conf.tlsCertificates.filter(
+      (c) => typeof c !== 'function',
+    ) as TlsCertificate[],
+  );
+  const certLoaders = conf.tlsCertificates.filter(
+    (c) => typeof c === 'function',
+  ) as TlsLoader[];
+  const hostnames = Array.from(hosts.keys());
+  const loadedCerts = (
+    await Promise.all(
+      certLoaders.map((l) => l(hostnames).then(parseTlsCertificates)),
+    )
+  ).flat();
+  const certificates = [...inlineCertificates, ...loadedCerts];
+  const defaultCert = certificates.find(() => true);
+  if (!defaultCert) throw new Error('No default certificate');
   return {
     certificates,
     defaultCert,
