@@ -36,6 +36,7 @@ export const BasicAuthPlugin: FastifyPluginAsync<BasicAuthPluginConf> = async (
   const conf = opts.providerConf;
   const usersFile = typeof conf.users === 'string' ? conf.users : undefined;
   const users = usersFile ? await readUsers(usersFile) : conf.users;
+  const credCache = new Map<string, string>();
   if (
     !Array.isArray(users) ||
     !users.every(
@@ -58,6 +59,14 @@ export const BasicAuthPlugin: FastifyPluginAsync<BasicAuthPluginConf> = async (
     Partial<BasicAuthPluginConf> = {
     ...opts,
     async validate(username, password, req, reply) {
+      //TODO: this code is not immune to timing attacks.
+      // It should be doing all checks and not shortcut on failure
+
+      // check cred cache.
+      const cachedPw = credCache.get(username);
+      if (cachedPw === password) {
+        return;
+      }
       const user = users.find((u) => u.username === username);
       if (user === undefined) {
         await new Promise((res) => setTimeout(res, 3000));
@@ -73,6 +82,7 @@ export const BasicAuthPlugin: FastifyPluginAsync<BasicAuthPluginConf> = async (
       if (opts.validUsers && !opts.validUsers.includes(username)) {
         throw new Error('unauthorized');
       }
+      credCache.set(username, password);
     },
     authenticate: { realm: opts.providerConf.realm },
   };
