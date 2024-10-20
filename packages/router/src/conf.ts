@@ -6,6 +6,7 @@ export interface VHost {
   authentication?: {
     provider: string;
     allowedUsers?: string[];
+    passthroughUserHeader?: string;
   };
 }
 

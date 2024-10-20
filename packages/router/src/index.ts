@@ -119,6 +119,7 @@ export default async function main() {
           await hostApp.register(BasicAuthPlugin, {
             providerConf,
             validUsers: vhost.authentication?.allowedUsers,
+            setHeader: vhost.authentication?.passthroughUserHeader
           });
         }
         await app.register(VhostPlugin, { vhost });

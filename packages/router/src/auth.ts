@@ -28,6 +28,7 @@ const saveUsers = async (
 interface BasicAuthPluginConf extends FastifyPluginOptions {
   providerConf: AuthProvider;
   validUsers?: string[];
+  setHeader?: string;
 }
 export const BasicAuthPlugin: FastifyPluginAsync<BasicAuthPluginConf> = async (
   instance,
@@ -65,6 +66,9 @@ export const BasicAuthPlugin: FastifyPluginAsync<BasicAuthPluginConf> = async (
       // check cred cache.
       const cachedPw = credCache.get(username);
       if (cachedPw === password) {
+        if (opts.setHeader) {
+          req.headers[opts.setHeader] = username;
+        }
         return;
       }
       const user = users.find((u) => u.username === username);
@@ -83,6 +87,9 @@ export const BasicAuthPlugin: FastifyPluginAsync<BasicAuthPluginConf> = async (
         throw new Error('unauthorized');
       }
       credCache.set(username, password);
+      if (opts.setHeader) {
+        req.headers[opts.setHeader] = username;
+      }
     },
     authenticate: { realm: opts.providerConf.realm },
   };
