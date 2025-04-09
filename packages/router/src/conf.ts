@@ -39,7 +39,8 @@ export type AuthProvider = {
 export interface Configuration {
   authProviders?: Record<string, AuthProvider>;
   vhosts: VHost[];
-  tlsCertificates: TlsCertificate[];
+  /** will not use SSL if this is undefined */
+  tlsCertificates?: TlsCertificate[];
   port: number;
 }
 

@@ -16,16 +16,16 @@ import fastifyAuth from '@fastify/auth';
 import fastifyCors from '@fastify/cors';
 export default async function main() {
   const conf = await parseConf(await findConfig());
-
-  // set up fastify over http2
+  const { ssl } = conf;
+  // set up fastify over http2 if ssl is configured, otherwise http1.1
   const app = await fastify({
-    http2: true,
-    https: {
-      ...(await tlsOptions(conf.defaultCert, conf.certificates)),
+    http2: (ssl && true),
+    https: ssl && {
+      ...(await tlsOptions(ssl.defaultCert, ssl.certificates)),
       allowHTTP1: true,
     },
     logger: true,
-  });
+  } as any);
   // TODO add conf for this
   await app.register(fastifyCors, {
     allowedHeaders: '*',

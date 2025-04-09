@@ -38,10 +38,14 @@ VHost Targets are a specification of how the http request must be resolved. Ther
   - with VHost configuration of `{ listener: { prefix: '/api', stripPrefix: true }, target: { type: 'http', base: 'https://myhost/apibase/'} }` it will be proxied to `https://myhost/apibase/myendpoint`
   - with VHost configuration of `{ listener: { prefix: '/api', stripPrefix: false }, target: { type: 'http', base: 'https://myhost/apibase/'} }` it will be proxied to `https://myhost/apibase/api/myendpoint`
 - `process`: will spawn a process from the directory specified in the `cwd` parameter using the command specified in the `cmd` parameter, and proxy requests to that service using http.
-  A `${PORT}` string on the command line (e.g. `{ cmd: 'node myapi.js -- --listen=http://localhost:${PORT}' }` will be replaced with a randomly generated port number and the spawned process should listen on localhost HTTP on that port.
+  A `${PORT}` string on the command line (e.g. `{ cmd: 'node myapi.js -- --listen=http://localhost:${PORT}' }` will be replaced with a randomly generated port number and the spawned process should listen on localhost HTTP on that port.)
 
 ## TLS/HTTPS/HTTP2
-In the current version SSL/TLS is mandatory. A non-empty list of certificates must be provided for the router to use.
+In order to do http2/SSL, a non-empty list of certificates must be provided for the router to use.
+If no list is provided the server will fall back to use plain http/1.1 for compatibility
+
+> WARNING: if basic authentication is enable the credential will travel _in plain text_ when not using https.
+> This is very dangerous unless you know exactly what you are doing (e.g. you have another proxy doing SSL termination and both the machines communicate in a _trusted network_). You are advised to excercise caution.
 
 The certificate is chosen among the list of candidates using [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication).
 When the SNI header is not present or none of the certificate match, the first certificate in the list will be used.
