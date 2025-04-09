@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -b",
-    "bundle-singlefile": "node build_standalone.js",
-    "build-release": "npm run build && npm run bundle-singlefile"
+    "sea": "npm run bundle && node build_standalone.js",
+    "bundle": "npm run build && rollup -c rollup.config.js",
+    "build-release": "npm run sea"
   },
   "keywords": [],
   "author": "",
