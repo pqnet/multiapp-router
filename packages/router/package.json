@@ -18,8 +18,7 @@
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@types/config": "^3.3.0",
     "postject": "^1.0.0-alpha.6",
-    "rollup": "^3.23.0",
-    "typescript": "^5.0.4"
+    "rollup": "^3.23.0"
   },
   "dependencies": {
     "@fastify/auth": "^4.2.0",
