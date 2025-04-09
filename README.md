@@ -6,14 +6,15 @@ on WSL/docker (a standalone Windows binary is provided so that it is possible to
 
 It can do:
 - Multiplexing HTTP requests to various backend based on host or path
-- SSL termination (i.e. proxying an HTTP only backend as HTTPS) 
+- SSL termination (i.e. proxying an HTTP only backend as HTTPS)
 - HTTP2
 - Basic authentication with usernames and hashed passwords
 - Route level authorization
 
 # Configuration
-Provide a configuration file in the working directory where the application is launched. The file must be named `router.conf.js` or `router.conf.json` according to its format. 
+Provide a configuration file in the working directory where the application is launched. The file must be named `router.conf.js` or `router.conf.json` according to its format.
 The file can either be a JSON object or a ESM .js file with default export (`yaml` format planned but not yet supported).
+For cloud deploy, it is possible to pass the configuration as a json or ESM literal in the ROUTER_CONF variable.
 
 If you use ESM keep in mind [nodejs restrictions about `import` expressions](https://nodejs.org/api/esm.html#import-specifiers).
 The configuration is loaded through a data URL to allow it to work in [Node SEA](https://nodejs.org/api/single-executable-applications.html) so things such as `import.meta.url` will likely not yield the expected result.
@@ -32,7 +33,7 @@ VHost Targets are a specification of how the http request must be resolved. Ther
 - `file`: serves statically a directory content, specified with the `base` configuration. Will render `index.html` in directory paths where it is present and provide a rough file listing in directories where it is not (see (template)[packages/router/src/template.ts])
 - `http` | `https` | `http2` | `https2`: will proxy requests appending them to the provided `base` HTTP(S) URL.
   If `2` is present in the type name it will resolve the backend using HTTP/2, otherwise it will use HTTP/1.
-  `http` and `https` are treated the same (whether to use SSL/TLS on the backend request depends only on the base url specification) 
+  `http` and `https` are treated the same (whether to use SSL/TLS on the backend request depends only on the base url specification)
   If `stripPrefix` property is present in the listener, the prefix specified in the listener will be removed from the URL otherwise it will be kept in the proxy resolution. For example, a request to `/api/myendpoint`:
   - with VHost configuration of `{ listener: { prefix: '/api', stripPrefix: true }, target: { type: 'http', base: 'https://myhost/apibase/'} }` it will be proxied to `https://myhost/apibase/myendpoint`
   - with VHost configuration of `{ listener: { prefix: '/api', stripPrefix: false }, target: { type: 'http', base: 'https://myhost/apibase/'} }` it will be proxied to `https://myhost/apibase/api/myendpoint`

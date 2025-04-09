@@ -74,6 +74,29 @@ export async function findConfig() {
   // - router.conf.js
   // - router.conf.json
   // - router.conf.yaml
+  // Also check for the environment variable ROUTER_CONF first
+  // if it is set, it should be a json string, or a javascript module
+  const envConf = process.env.ROUTER_CONF;
+  if (envConf) {
+    console.log('ROUTER_CONF is set, using it as configuration');
+    try {
+      const envCandidate = JSON.parse(envConf);
+      if (typeof envCandidate === 'object') {
+        return envCandidate;
+      }
+    }
+    catch (e) {
+      // ignore
+    }
+    try {
+      const url = `data:text/javascript;charset=UTF-8,${encodeURIComponent(
+        envConf,
+      )}`;
+      return (await import(url)).default;
+    } catch (e) {
+      throw new Error('ROUTER_CONF is set but is neither a json string nor a js module');
+    }
+  }
   const candidates = ['router.conf.js', 'router.conf.json', 'router.conf.yaml'];
   for (const candidate of candidates) {
     try {
