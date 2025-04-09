@@ -16,23 +16,23 @@ import fastifyAuth from '@fastify/auth';
 import fastifyCors from '@fastify/cors';
 export default async function main() {
   const conf = await parseConf(await findConfig());
-
-  // set up fastify over http2
+  const { ssl } = conf;
+  // set up fastify over http2 if ssl is configured, otherwise http1.1
   const app = await fastify({
-    http2: true,
-    https: {
-      ...(await tlsOptions(conf.defaultCert, conf.certificates)),
+    http2: ssl && true,
+    https: ssl && {
+      ...(await tlsOptions(ssl.defaultCert, ssl.certificates)),
       allowHTTP1: true,
     },
     logger: true,
-  });
+  } as any);
   // TODO add conf for this
   await app.register(fastifyCors, {
     allowedHeaders: '*',
     credentials: true,
     exposedHeaders: '*',
     origin: true,
-  })
+  });
   await app.register(fastifyConstraints);
 
   const VhostPlugin = async (
@@ -119,7 +119,7 @@ export default async function main() {
           await hostApp.register(BasicAuthPlugin, {
             providerConf,
             validUsers: vhost.authentication?.allowedUsers,
-            setHeader: vhost.authentication?.passthroughUserHeader
+            setHeader: vhost.authentication?.passthroughUserHeader,
           });
         }
         await app.register(VhostPlugin, { vhost });
@@ -136,6 +136,21 @@ export default async function main() {
 
   app.listen({ port: conf.port, host: '0.0.0.0' }, (err, address) => {
     console.error(address, err);
+  });
+  ['SIGTERM', 'SIGINT'].forEach((name) => {
+    process.on(name, () => {
+      console.log(`${name} received, shutting down`);
+      app
+        .close()
+        .then(() => {
+          console.log('closed');
+          process.exit(0);
+        })
+        .catch((err) => {
+          console.error('Error closing fastify', err);
+          process.exit(1);
+        });
+    });
   });
 }
 main().catch(console.error);

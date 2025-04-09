@@ -22,17 +22,17 @@ const needRehash = (oldHash: HashObjectPbkdf2Sha512) => {
   }
 };
 
-export async function createHash(password: string) {
+export async function createHash(password: string, iterations?: number) {
   const binaryPassword = Buffer.from(password, 'utf-8');
-  const hashObj = { ...creationParams };
-  hashObj.salt = await promisify(nodeCrypto.randomBytes)(64);
-  hashObj.hash = await pbkdf2(
-    binaryPassword,
-    hashObj.salt,
-    hashObj.params.i,
-    64,
-    'sha512',
-  );
+  const i = iterations ?? creationParams.params.i;
+  const salt = await promisify(nodeCrypto.randomBytes)(64);
+  const hash = await pbkdf2(binaryPassword, salt, i, 64, 'sha512');
+  const hashObj: HashObjectPbkdf2Sha512 = {
+    id: 'pbkdf2-sha512',
+    hash,
+    salt,
+    params: { i },
+  };
   return serialize(hashObj);
 }
 const checkHash: (

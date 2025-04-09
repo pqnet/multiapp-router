@@ -5,8 +5,10 @@ import { AuthProvider, Configuration, TlsCertificate, VHost } from './conf.js';
 import fs from 'node:fs/promises';
 export type ParsedCert = TlsCertificate & { match(host: string): boolean };
 export interface ParsedConf {
-  certificates: ParsedCert[];
-  defaultCert: ParsedCert;
+  ssl?: {
+    certificates: ParsedCert[];
+    defaultCert: ParsedCert;
+  };
   hosts: Map<string, VHost[]>;
   port: number;
   authProviders: Record<string, AuthProvider>;
@@ -43,10 +45,6 @@ const parseTlsCertificates = (tlsCertificates: TlsCertificate[]) =>
   );
 
 export async function parseConf(conf: Configuration): Promise<ParsedConf> {
-  // prepare tls router to choose certificate based on SNI
-  const certificates = await parseTlsCertificates(conf.tlsCertificates);
-  const defaultCert = certificates.find(() => true);
-  if (!defaultCert) throw new Error('No default certificate');
   // group vhosts by listener host
   const hosts = new Map<string, VHost[]>();
   for (const vhost of conf.vhosts) {
@@ -60,9 +58,25 @@ export async function parseConf(conf: Configuration): Promise<ParsedConf> {
       (a.listener.prefix ?? '/').localeCompare(b.listener.prefix ?? '/'),
     );
   });
+  let ssl: ParsedConf['ssl'];
+  if (conf.tlsCertificates) {
+    // prepare tls router to choose certificate based on SNI
+    const certificates = await parseTlsCertificates(conf.tlsCertificates);
+    const defaultCert = certificates?.find(() => true);
+    if (!defaultCert) throw new Error('No default certificate');
+    ssl = {
+      certificates,
+      defaultCert,
+    };
+  }
+  if (!ssl && conf.authProviders) {
+    console.warn(
+      'Warning: the router is configured to use basic authentication over plain http. The password will be in plaintext over the network. ' +
+      'Ensure that another proxy is configured to do SSL termination in front of this ' +
+      'and ensure that you trust the private network connecting them',)
+  }
   return {
-    certificates,
-    defaultCert,
+    ssl,
     hosts,
     port: conf.port,
     authProviders: conf.authProviders ?? {},
@@ -74,6 +88,30 @@ export async function findConfig() {
   // - router.conf.js
   // - router.conf.json
   // - router.conf.yaml
+  // Also check for the environment variable ROUTER_CONF first
+  // if it is set, it should be a json string, or a javascript module
+  const envConf = process.env.ROUTER_CONF;
+  if (envConf) {
+    console.log('ROUTER_CONF is set, using it as configuration');
+    try {
+      const envCandidate = JSON.parse(envConf);
+      if (typeof envCandidate === 'object') {
+        return envCandidate;
+      }
+    } catch (e) {
+      // ignore
+    }
+    try {
+      const url = `data:text/javascript;charset=UTF-8,${encodeURIComponent(
+        envConf,
+      )}`;
+      return (await import(url)).default;
+    } catch (e) {
+      throw new Error(
+        'ROUTER_CONF is set but is neither a json string nor a js module',
+      );
+    }
+  }
   const candidates = ['router.conf.js', 'router.conf.json', 'router.conf.yaml'];
   for (const candidate of candidates) {
     try {

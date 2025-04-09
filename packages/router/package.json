@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -b",
-    "bundle-singlefile": "node build_standalone.js",
-    "build-release": "npm run build && npm run bundle-singlefile"
+    "sea": "npm run bundle && node build_standalone.js",
+    "bundle": "npm run build && rollup -c rollup.config.js",
+    "build-container": "npm run bundle && ./build-container.sh",
+    "build-release": "npm run sea"
   },
   "keywords": [],
   "author": "",
@@ -17,10 +19,8 @@
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@types/config": "^3.3.0",
-    "@types/node": "^20.1.0",
     "postject": "^1.0.0-alpha.6",
-    "rollup": "^3.23.0",
-    "typescript": "^5.0.4"
+    "rollup": "^3.23.0"
   },
   "dependencies": {
     "@fastify/auth": "^4.2.0",
