@@ -90,6 +90,7 @@ export const BasicAuthPlugin: FastifyPluginAsync<BasicAuthPluginConf> = async (
       if (opts.setHeader) {
         req.headers[opts.setHeader] = username;
       }
+      delete req.headers.authorization;
     },
     authenticate: { realm: opts.providerConf.realm },
   };
