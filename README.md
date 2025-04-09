@@ -83,3 +83,11 @@ undefined
 '$pbkdf2-sha512$i=200000$69NPrvbFODAHy9gpZe833u2akwO2ji4tBuPq5oJ+oDklsKns/UXrqCKMKpUdZQDexoyQB9pNSeagp2EaF+3hdQ$md1roWZARTcxX0+4JAqkeUZcaPgozh+oiny+OxUYk+/xZcc2heM1zbn/Yg7ufL90w+dGQbi8iAKJVt5HiLiwQQ'
 ```
 If users are specified with a file, hashes are updated automatically when the user logs in if the hash iteration of the hash in the file is less than the default hash iteration number (see [password.ts:17](packages/router/src/password.ts#L17))
+
+
+# Docker/Podman
+```
+podman run docker.io/pqnet/multiapp-router:latest
+```
+Remember to pass a [configuration](#configuration), either as env variable or bundled file(s), and to forward the port on the host using `-p`
+The router runs from the `/app/config` working directory, and it will expect the configuration to be there.
